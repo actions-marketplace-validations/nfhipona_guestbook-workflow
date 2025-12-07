@@ -1,10 +1,6 @@
-const { ReadmeBox } = require('readme-box')
-const runQuery = require('./components/graphql_query');
-
-const { 
+const {
     GITHUB_TOKEN,
-    TARGET_BRANCH, 
-    ENABLE_KEEP_ALIVE,
+    TARGET_BRANCH,
     MAX_CHARACTER_COUNT,
     ENTRY_IDENTIFIER,
     ENTRY_IDENTIFIER_DELIMITER,
@@ -13,9 +9,16 @@ const {
     COMMENT_EMPTY_TITLE_TEMPLATE,
     COMMENT_LINK_TEMPLATE,
     EMPTY_TEMPLATE,
-    owner, 
+    CLOSE_OUDATED_ISSUES,
+    owner,
     repo
 } = require('./components/constants');
+
+const { ReadmeBox } = require('readme-box')
+const {
+    runFetchQuery,
+    runCloseAllOutdatedIssues
+} = require('./components/graphql_query');
 
 async function updateReadme(content) {
     return await ReadmeBox.updateSection(content, {
@@ -28,8 +31,7 @@ async function updateReadme(content) {
     });
 }
 
-function constructGuestbook(issues = []) {
-    const comments = issues.filter(issue => issue.isGuestEntry(ENTRY_IDENTIFIER));
+function constructGuestbook(comments = []) {
     if (comments.length === 0) {
         return EMPTY_TEMPLATE
             .replaceAll('$username', owner)
@@ -43,8 +45,8 @@ function constructGuestbook(issues = []) {
 
     const guestbookComments = comments
         .map(item => item.toEntryString(
-                ENTRY_IDENTIFIER, ENTRY_IDENTIFIER_DELIMITER, COMMENT_TEMPLATE, COMMENT_EMPTY_TITLE_TEMPLATE, Number(MAX_CHARACTER_COUNT) || 0
-            ))
+            ENTRY_IDENTIFIER, ENTRY_IDENTIFIER_DELIMITER, COMMENT_TEMPLATE, COMMENT_EMPTY_TITLE_TEMPLATE, Number(MAX_CHARACTER_COUNT) || 0
+        ))
         .join('\n');
 
     const newEntryLink = COMMENT_LINK_TEMPLATE
@@ -56,9 +58,13 @@ function constructGuestbook(issues = []) {
 }
 
 async function runWorkflow() {
-    const issues = await runQuery();
+    const issues = await runFetchQuery(ENTRY_IDENTIFIER);
     const guestbookContents = constructGuestbook(issues);
     await updateReadme(guestbookContents);
+
+    if (CLOSE_OUDATED_ISSUES === true) {
+        await runCloseAllOutdatedIssues(ENTRY_IDENTIFIER, ENTRY_IDENTIFIER_DELIMITER);
+    }
 };
 
 runWorkflow();

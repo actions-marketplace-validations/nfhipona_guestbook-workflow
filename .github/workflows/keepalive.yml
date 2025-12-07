@@ -1,0 +1,26 @@
+name: Keepalive Workflow
+on:
+  schedule: # Run workflow automatically
+    # Runs: At 23:59 on Saturday.
+    - cron: '59 23 * * 6'
+  workflow_dispatch: # Run workflow manually (without waiting for the cron to be called), through the GitHub Actions Workflow page directly
+
+permissions:
+  contents: write # To write the generated contents to the readme
+
+jobs:
+  update_guestbook:
+    name: Update this repo's README with guestbook's latest activity
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Keep repository alive
+        uses: gautamkrishnar/keepalive-workflow@v1
+        with: # https://docs.github.com/en/webhooks-and-events/webhooks/webhook-events-and-payloads#repository
+          committer_username: ${{ github.event.pusher.username }}
+          committer_email: ${{ github.event.pusher.email }}
+          commit_message: Updated with keep alive
+          time_elapsed: 30

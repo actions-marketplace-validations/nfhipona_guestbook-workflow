@@ -4,12 +4,10 @@ const github = require('@actions/github');
 const GITHUB_TOKEN = core.getInput('gh_token');
 const MAX_DISPLAY_COUNT = core.getInput('max_display_count');
 const MAX_CHARACTER_COUNT = core.getInput('max_character_count');
-const COMMITTER_USERNAME = core.getInput('committer_username');
-const COMMITTER_EMAIL = core.getInput('committer_email');
-const COMMITTER_MESSAGE = core.getInput('commit_message');
-const ENABLE_KEEP_ALIVE = core.getInput('enable_keepalive');
+const RETRY_ENABLED = core.getInput('retry_enabled');
 const MAX_RETRY_COUNT = core.getInput('max_retry_count');
 const RETRY_WAIT_TIME = core.getInput('retry_wait_time');
+const ENTRY_LABELS = core.getInput('entry_labels');
 const ENTRY_IDENTIFIER = core.getInput('entry_identifier');
 const ENTRY_IDENTIFIER_DELIMITER = core.getInput('entry_identifier_delimiter');
 const COMMENT_TEMPLATE = core.getInput('comment_template');
@@ -18,20 +16,22 @@ const COMMENT_LINK_TEMPLATE = core.getInput('comment_link_template');
 const EMPTY_TEMPLATE = core.getInput('empty_template');
 const TARGET_BRANCH = core.getInput('target_branch');
 const SECTION_IDENTIFIER = core.getInput('section_identifier');
+const INCLUDE_BODY_FORMATTING = core.getInput('include_body_formatting');
+const CLOSE_OUDATED_ISSUES = core.getInput('close_outdated_issues');
+const REMOTE_REPO = core.getInput('remote_repo');
 
 const octokit = github.getOctokit(GITHUB_TOKEN);
 const { owner, repo } = github.context.repo;
+const source_repo = REMOTE_REPO.length > 0 ? REMOTE_REPO : repo;
 
 module.exports = {
     GITHUB_TOKEN,
     MAX_DISPLAY_COUNT,
     MAX_CHARACTER_COUNT,
-    COMMITTER_USERNAME,
-    COMMITTER_EMAIL,
-    COMMITTER_MESSAGE,
-    ENABLE_KEEP_ALIVE,
+    RETRY_ENABLED,
     MAX_RETRY_COUNT,
     RETRY_WAIT_TIME,
+    ENTRY_LABELS,
     ENTRY_IDENTIFIER,
     ENTRY_IDENTIFIER_DELIMITER,
     COMMENT_TEMPLATE,
@@ -40,7 +40,10 @@ module.exports = {
     EMPTY_TEMPLATE,
     TARGET_BRANCH,
     SECTION_IDENTIFIER,
+    INCLUDE_BODY_FORMATTING,
+    CLOSE_OUDATED_ISSUES,
     octokit,
-    owner, 
-    repo
+    owner,
+    repo,
+    source_repo
 };
